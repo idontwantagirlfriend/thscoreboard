@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+{% load static %}
+{% load sass_tags %}
+{% load i18n %}
+{% load get_games %}
+{% get_all_games_by_category as all_games_by_category %}
+<html lang="en">
+<head>
+    <title>{% block title %}Silent Selene{% endblock %}</title>
+    <link rel="stylesheet" href="{% sass_src 'style.sass' %}">
+    <link rel="stylesheet" href="{% static 'fonts/Lato.css' %}">
+    <link rel="stylesheet" href="{% static 'fonts/EBGaramond.css' %}">
+    <script src="/static/js/main.js" defer></script>
+    {% block favicon %}<link rel="icon" type="image/png" href="{% static 'favicon.png' %}" sizes="48x48">{% endblock %}
+    <meta property="og:title" content="{% block embed_title %}Silent Selene{% endblock %}" />
+    <meta property="og:site_name" content="Silent Selene" />
+    <meta property="og:description" content="{% block embed_description %}Upload and view Touhou replays at Silent Selene, the modern replay hub.{% endblock %}" />
+    <meta property="og:image" content="{% block embed_favicon %}{% static 'favicon.png' %}{% endblock %}" />
+</head>
+
+<body>
+    <div class="whole-page">
+        <div class="banner">
+            <a href="/" class="banner-home-link"></a>
+            <div class="banner-links">
+                {% if user.is_authenticated %}
+                <div class="banner-link">
+                    <a href="/replays/upload">Upload</a>
+                </div>
+                <div class="banner-link">
+                    <a href="/replays/user/{{user.username}}">My replays</a>
+                </div>
+                <div class="banner-link">
+                    <a href="/users/profile">Profile</a>
+                </div>
+                {% if user.is_staff or user.is_superuser %}
+                <div class="banner-link">
+                    <a href="/staff">Staff tools</a>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="banner-link">
+                    <a href="/users/login">Log in</a>
+                </div>
+                <div class="banner-link">
+                    <a href="/users/register">Sign Up</a>
+                </div>
+                {% endif %}
+                <div class="banner-link">
+                    <form method="post" action="/users/set_language" class="language-switcher">
+                        {% csrf_token %}
+                        {% get_current_language as language_code %}
+                        <input type="hidden" name="language" value="{% if language_code == 'ja' %}en_US{% else %}ja{% endif %}" />
+                        <button type="submit">{% if language_code == 'ja' %}🇯🇵 {% translate "Japanese" context "language" %}{% else %}🇺🇸 {% translate "English" context "language" %}{% endif %}</button>
+                    </form>
+                </div>
+                <div class="banner-link">
+                <a class="theme-switcher" href="#" onclick="toggleTheme()">🌙</a>
+                </div>
+            </div>
+        </div>
+        <div class="content-and-sidebar">
+            <nav class="sidebar">
+                {% for game_category, games in all_games_by_category.items %}
+                <h1 class="highlight">
+                    {{game_category}}
+                </h1>
+                <ul class="game-list">
+                    {% for game in games %}
+                    <li>
+                        <div class="sidebar-game-icon">
+                            <img src="{{game.GetIconPath}}"/>
+                        </div>
+                        <div class="sidebar-game-link">
+                            <a href="/replays/{{game.game_id}}">{{game.GetName}}</a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endfor %}
+                <h1 class="highlight">
+                    About the site
+                </h1>
+                <ul>
+                <li><a href="/docs">About</a></li>
+                <li><a href="https://news.silentselene.net">Blog</a></li>
+                <li><a href="/docs/rules">Website rules</a></li>
+                <li><a href="/docs/replayrules">Replay rules</a></li>
+                <li><a href="/docs/privacy">Privacy policy</a></li>
+                <li><a href="/docs/licenses">Licences</a></li>
+                <li><a href="/docs/terms">Terms of Use</a></li>
+                <li><a href="/docs/credits">Credits</a></li>
+                </ul>
+            </nav>
+            <div class="main">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</html>

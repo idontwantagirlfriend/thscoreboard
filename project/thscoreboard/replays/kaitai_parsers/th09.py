@@ -95,13 +95,13 @@ class Th09(KaitaiStruct):
             return self._m_stages
 
         _pos = self._io.pos()
+        self._io.seek(self.file_header.stage_offsets[i])
         self._m_stages = []
         for i in range(20):
             _on = self.file_header.stage_offsets[i]
             if _on == 0:
                 self._m_stages.append(Th09.Dummy(self._io, self, self._root))
             else:
-                self._io.seek(self.file_header.stage_offsets[i])
                 self._m_stages.append(Th09.Stage(self._io, self, self._root))
 
         self._io.seek(_pos)
